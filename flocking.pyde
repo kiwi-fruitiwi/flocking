@@ -17,8 +17,7 @@ def setup():
     frameRate(40)
     colorMode(HSB, 360, 100, 100, 100)
     mono = createFont("terminus.ttf", 16);
-    textFont(mono);   
-    noSmooth()
+    textFont(mono);
     
     flock = []
     for i in range(80):
@@ -31,11 +30,15 @@ def draw():
     background(209, 95, 33)
     fill(0, 0, 100)
     
+    
+    # update the flock first
+    for boid in flock:        
+        boid.update()
+        boid.edges()
+    
     # display the entire flock
     for boid in flock:
-        boid.edges()
         boid.flock(flock)
-        boid.update()
         boid.show()
     
     fill(0, 0, 100)

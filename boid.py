@@ -1,3 +1,5 @@
+from quadtree import *
+
 
 # an automated bird! kind of like a bird and droid
 class Boid:

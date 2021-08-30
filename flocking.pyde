@@ -2,13 +2,18 @@
 # Flocking Simulation with Daniel Shiffman at the Coding Train!
 # This is coding challenge #124
 # Flocking behavior follows:
-#    separation: steer to avoid crowding local flockmates
-#    alignment: steer toward the average heading of local flockmates
-#    cohesion: steer to move toward the average position of local flockmates
+# .  separation: steer to avoid crowding local flockmates
+# .  alignment: steer toward the average heading of local flockmates
+# .  cohesion: steer to move toward the average position of local flockmates
+# .  9S hackbot show()
+# >  quadtree
 #    object avoidance: ?
-#
+#    3D! uh oh, quaterion?
+#    boids with different parameters. colored!
+#    field of view rule! "flake"? keep the views clear
 
-from boid import Boid
+from boid import *
+from quadtree import *
         
 def setup():
     global flock
@@ -20,7 +25,7 @@ def setup():
     textFont(mono);
     
     flock = []
-    for i in range(80):
+    for i in range(100):
         flock.append(Boid())
         
     
@@ -29,7 +34,6 @@ def draw():
     
     background(209, 95, 33)
     fill(0, 0, 100)
-    
     
     # update the flock first
     for boid in flock:        

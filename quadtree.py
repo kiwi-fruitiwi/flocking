@@ -14,8 +14,6 @@ class Rectangle:
         self.y = y
         self.w = w
         self.h = h
-        
-        print(self)
     
     # test if this contains a point
     def contains(self, p):
@@ -43,6 +41,7 @@ class Rectangle:
     def __repr__(self):
         s = "I am a rectangle at point {},{} with width {} and height {}"
         return s.format(self.x, self.y, self.w, self.h)        
+
 
 class Quadtree():
     def __init__(self, boundary, n): # boundary is a Rectangle
@@ -161,11 +160,12 @@ class Quadtree():
             return p.extend(nw.extend(ne.extend(se.extend(sw))))
         else:
             return p
-    
+
     
     def show(self):
-        stroke(0, 0, 100, 100)
+        stroke(0, 0, 100)
         noFill()
+        strokeWeight(1)
         rect(self.boundary.x, self.boundary.y, self.boundary.w, self.boundary.h)
         
         if self.divided: # checking existence

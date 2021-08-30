@@ -1,5 +1,3 @@
-from quadtree import *
-
 
 # an automated bird! kind of like a bird and droid
 class Boid:
@@ -86,16 +84,16 @@ class Boid:
         strokeWeight(1)
         square(r*-B, r*T, r*0.2)
         square(r*-B, -r*T, r*0.2)        
-        
+        rectMode(CORNER)
         popMatrix()
         # draw the velocity vector? unnecessary because we rotate to that direction
-        
-    
-    # steer with limited perception of nearby neighbors
-    
-    # steer to avoid crowding local flockmates
-    def separation(self):
-        pass
+ 
+ 
+    def show_simple(self):
+        strokeWeight(4)
+        stroke(0, 0, 100)
+        fill(0, 0, 100, 50)
+        point(self.position.x, self.position.y)
         
     
     # wrap off the edges
@@ -193,6 +191,8 @@ class Boid:
                 difference = PVector.sub(self.position, boid.position)
                 # we want this difference to be inversely proportional to the distance between
                 # self and other; the further away it is, the lower the magnitude we want
+                
+                # TODO: fix zero division error
                 difference.div(distance)
                 
                 total += 1 # count how many are within our radius to divide later for average

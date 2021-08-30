@@ -14,7 +14,7 @@ def setup():
     global flock
     
     size(640, 360)
-    # frameRate(144)
+    frameRate(40)
     colorMode(HSB, 360, 100, 100, 100)
     mono = createFont("terminus.ttf", 16);
     textFont(mono);   

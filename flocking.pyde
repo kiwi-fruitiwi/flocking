@@ -6,7 +6,9 @@
 # .  alignment: steer toward the average heading of local flockmates
 # .  cohesion: steer to move toward the average position of local flockmates
 # .  9S hackbot show()
-# >  quadtree
+# .  quadtree
+# .  seek, evade, mousepressed seek toggle, apply_force
+#    reimplement seek and refactor alignment, cohesion, and separation with it
 #    object avoidance: ?
 #    3D! uh oh, quaterion?
 #    boids with different parameters. colored!
@@ -16,7 +18,7 @@ from boid import *
 from quadtree import *
         
 def setup():
-    global boids
+    global boids, seek
     
     size(640, 360)
     rectMode(CORNER)
@@ -25,12 +27,13 @@ def setup():
     textFont(mono);
     
     boids = []
+    seek = True # used as a toggle if we want the boids to seek a target
     for i in range(150):
         boids.append(Boid())
         
     
 def draw():    
-    global boids
+    global boids, seek
     
     background(209, 95, 33)
     fill(0, 0, 100)
@@ -66,14 +69,21 @@ def draw():
         # we used to send in the entire boids list but now we use our quadtree to
         # cut down comparison time
         # boid.flock(boids)
-        boid.flock(boid_query_result) 
+        
+        
+        # boid.flock(boid_query_result)
+        steering = boid.seek(PVector(mouseX, mouseY))
+        if seek:
+            boid.apply_force(steering)
+        else:
+            boid.apply_force(steering.mult(-1)) # this replicates evade
         boid.show()
 
     qt.show()
     
     
     # update the flock
-    for boid in boids:        
+    for boid in boids:
         boid.update()
         boid.edges()
         
@@ -86,3 +96,9 @@ def draw():
     
     fill(0, 0, 100, 100)
     text(s, 12, 24)
+
+
+def mousePressed():
+    global seek
+     
+    seek = not seek

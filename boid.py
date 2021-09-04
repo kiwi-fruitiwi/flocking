@@ -13,8 +13,8 @@ class Boid:
 
     # update the boid's position, velocity, and acceleration
     def update(self):
-        self.position.add(self.velocity)
         self.velocity.add(self.acceleration)
+        self.position.add(self.velocity)
         self.velocity.limit(self.max_speed)
         self.acceleration.mult(0)
     
@@ -108,6 +108,36 @@ class Boid:
         elif self.position.y < 0:
             self.position.y = height
  
+ 
+    def apply_force(self, force):
+        # F=ma, but we assure m=1 so our force vector becomes an acceleration vector
+        self.acceleration.add(force)
+        
+ 
+    # steering force = desired velocity - current velocity, as per Craig Reynolds's
+    # sbfac paper. Desired velocity should be a vector with direction toward where we
+    # want to go. Our steering force acts like a correction; it corrects for our current
+    # velocity and steers us to cancel that and toward our target 
+    def seek(self, target_position):
+        # a vector pointing from us to our target, which we will treat as a velocity
+        # instead of the position it actually is
+        direction = PVector.sub(target_position, self.position)
+        
+        # set this velocity to our max speed
+        direction.setMag(self.max_speed)
+        
+        # steering force = desired velocity - current velocity
+        # note that we are taking a velocity vector and are going to treat it as an
+        # acceleration vector :o
+        steering = PVector.sub(direction, self.velocity)
+        steering.limit(self.max_force)
+        return steering
+
+    
+    def evade(self, target_position):
+        return self.seek(target_position).mult(-1)
+        
+        
        
     # align this boid with all the other boids within a perception radius
     def align(self, boids):
@@ -207,7 +237,7 @@ class Boid:
              
             steering_force.setMag(self.max_speed)
             steering_force.sub(self.velocity)
-            steering_force.limit(self.max_force)
+            steering_force.limit(self.max_force).mult(1.5)
             
             
         # # note that if we didn't find anything, we return the zero vector

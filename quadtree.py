@@ -6,6 +6,25 @@ class Point:
         
     def __repr__(self):
         return "({},{})".format(self.x, self.y)
+
+
+class Circle:
+    def __init__(self, x, y, r):
+        self.x = x
+        self.y = y
+        self.r = r
+    
+    # test if this contains a point
+    def contains(self, p):
+        # just check distance to center
+        return dist(p.x, p.y, self.x, self.y) < self.r
+    
+
+    # do we intersect with a rectangle?
+    def intersects(self, rectangle):
+        
+        # TODO: This needs some math and time
+        pass
         
 
 class Rectangle:
@@ -120,6 +139,7 @@ class Quadtree():
         
     # return a list of points within a boundary
     # an aabb is an axis-aligned bounding box, aka rectangle
+    # this will work for circles too as long as it has a intersects and contains method
     def query(self, aabb):
         found = [] # 
         
@@ -142,7 +162,6 @@ class Quadtree():
         # return an empty array if we don't intersects and find nothing
         # otherwise return the result of recursion
         return found
-            
     
     
     # return a list of points in this quadtree

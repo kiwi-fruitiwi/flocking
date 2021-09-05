@@ -9,6 +9,8 @@
 # .  quadtree
 # .  seek, evade, mousepressed seek toggle, apply_force
 #    reimplement seek and refactor alignment, cohesion, and separation with it
+#    circle intersection
+#    field of view arc in perception radius
 #    object avoidance: ?
 #    3D! uh oh, quaterion?
 #    boids with different parameters. colored!
@@ -72,11 +74,12 @@ def draw():
         
         
         # boid.flock(boid_query_result)
-        steering = boid.seek(PVector(mouseX, mouseY))
+        steering = boid.seek_target(PVector(mouseX, mouseY))
         if seek:
             boid.apply_force(steering)
         else:
             boid.apply_force(steering.mult(-1)) # this replicates evade
+    
         boid.show()
 
     qt.show()

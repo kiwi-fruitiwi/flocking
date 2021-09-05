@@ -5,8 +5,8 @@ class Boid:
         self.position = PVector(random(width), random(height))
         self.velocity = PVector().random2D().setMag(random(0.5, 1.5))
         self.acceleration = PVector()
-        self.max_force = 0.2
-        self.max_speed = 4
+        self.max_force = random(0.15, 0.25)
+        self.max_speed = random(2.5, 4.5)
         self.ACC_VECTOR_SCALE = 200
         self.r = 16
 
@@ -118,29 +118,61 @@ class Boid:
     # sbfac paper. Desired velocity should be a vector with direction toward where we
     # want to go. Our steering force acts like a correction; it corrects for our current
     # velocity and steers us to cancel that and toward our target 
-    def seek(self, target_position):
+    #
+    # returns a force vector steering this boid to its target's position
+    def seek_target(self, target_position):
         # a vector pointing from us to our target, which we will treat as a velocity
         # instead of the position it actually is
-        direction = PVector.sub(target_position, self.position)
-        
+        desired_velocity = PVector.sub(target_position, self.position)
+        return self.seek_velocity(desired_velocity)
+    
+    
+    # this needs to be called with a desired velocity
+    # as per Craig Reynolds's paper, steering force = desired velocity - current velocity
+    # seek calls this with PVector.sub(target_position, self.position) 
+    #
+    # returns a force vector steering this boid toward its provided desired velocity
+    def seek_velocity(self, desired_velocity):
         # set this velocity to our max speed
-        direction.setMag(self.max_speed)
+        desired_velocity.setMag(self.max_speed)
         
         # steering force = desired velocity - current velocity
         # note that we are taking a velocity vector and are going to treat it as an
         # acceleration vector :o
-        steering = PVector.sub(direction, self.velocity)
+        steering = PVector.sub(desired_velocity, self.velocity)
         steering.limit(self.max_force)
         return steering
-
+        
+        
     
     def evade(self, target_position):
         return self.seek(target_position).mult(-1)
         
+    
+    # try to steer toward the same heading as neighboring boids within a perception radius
+    # this implementation uses seek!
+    # returns a zero force PVector if there are no other boids within a radius
+    def align(self, boids, radius):
+        PERCEPTION_RADIUS = radius
+        total = 0 # total number of neighboring boids we use for calculating the avg heading
+        average = PVector() # this vector will hold the average heading of neighboring boids
         
+        # find the average heading of neighboring boids
+        for boid in boids:
+            distance = PVector.dist(self.position, boid.position)
+            # only calculate for other boids (not us!) within the radius
+            if boid != self and distance < PERCEPTION_RADIUS:
+                total += 1
+                average.add(boid.velocity) # velocity contains heading information
+        
+        if total > 0:
+            average.div(total)
+        
+        return self.seek(average)
+            
        
     # align this boid with all the other boids within a perception radius
-    def align(self, boids):
+    def deprecated_align(self, boids):
         perception_radius = 40
         total = 0
         average = PVector(0, 0) # this is our desired velocity
@@ -158,7 +190,7 @@ class Boid:
         if total > 0:
             steering_force.div(total) # this is our desired velocity!
             # a steering force = desired velocity - actual velocity, 
-            # kind of like correcting error
+            # kind of like correcting error            
             
             steering_force.setMag(self.max_speed)
             steering_force = PVector.sub(steering_force, self.velocity)
@@ -246,7 +278,8 @@ class Boid:
         
         
     def flock(self, boids):
-        alignment = self.align(boids)
+        # alignment = self.align(boids, radius=40)
+        alignment = self.deprecated_align(boids)
         self.acceleration.add(alignment)
         
         cohesion = self.cohesion(boids) 

@@ -152,8 +152,7 @@ class Boid:
     # try to steer toward the same heading as neighboring boids within a perception radius
     # this implementation uses seek!
     # returns a zero force PVector if there are no other boids within a radius
-    def align(self, boids, radius):
-        PERCEPTION_RADIUS = radius
+    def align(self, boids, perception_radius):
         total = 0 # total number of neighboring boids we use for calculating the avg heading
         average = PVector() # this vector will hold the average heading of neighboring boids
         
@@ -161,50 +160,19 @@ class Boid:
         for boid in boids:
             distance = PVector.dist(self.position, boid.position)
             # only calculate for other boids (not us!) within the radius
-            if boid != self and distance < PERCEPTION_RADIUS:
+            if boid != self and distance < perception_radius:
                 total += 1
                 average.add(boid.velocity) # velocity contains heading information
         
         if total > 0:
-            average.div(total)
-        
-        return self.seek(average)
-            
-       
-    # align this boid with all the other boids within a perception radius
-    def deprecated_align(self, boids):
-        perception_radius = 40
-        total = 0
-        average = PVector(0, 0) # this is our desired velocity
-        
-        # find the average of the velocities of all the boids
-        for boid in boids:
-            distance = PVector.dist(self.position, boid.position)
-            # only calculate within a desired perception radius
-            if boid != self and distance < perception_radius:
-                total += 1 # count how many are within our radius to divide later for average
-                average.add(boid.velocity)                
-        
-        steering_force = average
-        
-        if total > 0:
-            steering_force.div(total) # this is our desired velocity!
-            # a steering force = desired velocity - actual velocity, 
-            # kind of like correcting error            
-            
-            steering_force.setMag(self.max_speed)
-            steering_force = PVector.sub(steering_force, self.velocity)
-            steering_force.limit(self.max_force)
-            
-            
-        # # note that if we didn't find anything, we return the zero vector
-        # return PVector(0, 0)
-        return steering_force
+            average.div(total)       
+            return self.seek_velocity(average)
+        else:
+            return PVector()    
 
 
     # steer to move toward the average location of nearby flockmates
-    def cohesion(self, boids):
-        perception_radius = 40
+    def cohesion(self, boids, perception_radius):
         total = 0
         average = PVector(0, 0) # this is our desired velocity
         
@@ -224,23 +192,28 @@ class Boid:
         if total > 0:
             steering_force.div(total) # this is our desired velocity!
     
-            # note that we subtract our position from the average position first!
-            # this is the main difference from self.align!
-                    
-            steering_force = PVector.sub(steering_force, self.position)            
-            steering_force.setMag(self.max_speed)
-            steering_force.sub(self.velocity)
-            steering_force.limit(self.max_force)
-            
+            # note that we subtract our position from the average position first;
+            # this is the main difference from self.align!                    
+            return self.seek_target(steering_force)            
             
         # # note that if we didn't find anything, we return the zero vector
-        # return PVector(0, 0)
-        return steering_force
+        return PVector(0, 0)
+    
+    
+    # applies flock behaviors to all boids
+    def flock(self, boids):
+        alignment = self.align(boids, 40)
+        self.acceleration.add(alignment)
+        
+        cohesion = self.cohesion(boids, 40) 
+        self.acceleration.add(cohesion)
+        
+        separation = self.separation(boids, 30)
+        self.acceleration.add(separation)        
     
     
     # steer to avoid crowding local flockmates
-    def separation(self, boids):
-        perception_radius = 30
+    def separation(self, boids, perception_radius):
         total = 0
         average = PVector(0, 0) # this is our desired velocity
         
@@ -255,8 +228,7 @@ class Boid:
                 # self and other; the further away it is, the lower the magnitude we want
                 
                 # TODO: fix zero division error
-                difference.div(distance)
-                
+                difference.div(distance)                
                 total += 1 # count how many are within our radius to divide later for average
                 
                 # in self.align, we added the other boids' velocities. here we add position!
@@ -265,25 +237,8 @@ class Boid:
         steering_force = average
         
         if total > 0:
-            steering_force.div(total) # this is our desired velocity!
-             
-            steering_force.setMag(self.max_speed)
-            steering_force.sub(self.velocity)
-            steering_force.limit(self.max_force).mult(1.5)
-            
+            steering_force.div(total) # this is our desired velocity!        
+            return self.seek_velocity(steering_force).mult(1.5)            
             
         # # note that if we didn't find anything, we return the zero vector
-        # return PVector(0, 0)
-        return steering_force
-        
-        
-    def flock(self, boids):
-        # alignment = self.align(boids, radius=40)
-        alignment = self.deprecated_align(boids)
-        self.acceleration.add(alignment)
-        
-        cohesion = self.cohesion(boids) 
-        self.acceleration.add(cohesion)
-        
-        separation = self.separation(boids)
-        self.acceleration.add(separation)
+        return PVector(0, 0)

@@ -73,12 +73,12 @@ def draw():
         # boid.flock(boids)
         
         
-        # boid.flock(boid_query_result)
-        steering = boid.seek_target(PVector(mouseX, mouseY))
-        if seek:
-            boid.apply_force(steering)
-        else:
-            boid.apply_force(steering.mult(-1)) # this replicates evade
+        boid.flock(boid_query_result)
+        # steering = boid.seek_target(PVector(mouseX, mouseY))
+        # if seek:
+        #     boid.apply_force(steering)
+        # else:
+        #     boid.apply_force(steering.mult(-1)) # this replicates evade
     
         boid.show()
 

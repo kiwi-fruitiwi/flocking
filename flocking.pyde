@@ -52,7 +52,7 @@ def draw():
     # display the entire flock
     # use our quadtree to query only boids within a certain radius
     # radius of bounding box
-    R = 15
+    R = 20
     for boid in boids:
         x = boid.position.x
         y = boid.position.y
@@ -80,7 +80,8 @@ def draw():
         # else:
         #     boid.apply_force(steering.mult(-1)) # this replicates evade
     
-        boid.show()
+        # boid.show_simple()
+        boid.show_bee()
 
     qt.show()
     

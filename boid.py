@@ -3,12 +3,13 @@
 class Boid:
     def __init__(self):
         self.position = PVector(random(width), random(height))
-        self.velocity = PVector().random2D().setMag(random(0.5, 1.5))
+        self.velocity = PVector().random2D().setMag(random(2.5, 4.5))
         self.acceleration = PVector()
         self.max_force = random(0.15, 0.25)
         self.max_speed = random(2.5, 4.5)
-        self.ACC_VECTOR_SCALE = 200
+        self.ACC_VECTOR_SCALE = 100
         self.r = 16
+        self.bee_img = loadImage("bee.png")  
 
 
     # update the boid's position, velocity, and acceleration
@@ -29,7 +30,16 @@ class Boid:
         line(0, 0, self.ACC_VECTOR_SCALE*self.acceleration.x, self.ACC_VECTOR_SCALE*self.acceleration.y)
         noStroke()    
         popMatrix()
-        print self.acceleration.mag()
+        
+    
+    # display as a bee!
+    def show_bee(self): 
+        pushMatrix()
+        translate(self.position.x, self.position.y)
+        # rotate(self.velocity.heading())
+        image(self.bee_img, 0, 0)
+        popMatrix()
+
         
 
     def show(self):
@@ -90,10 +100,13 @@ class Boid:
  
  
     def show_simple(self):
-        strokeWeight(4)
-        stroke(0, 0, 100)
-        fill(0, 0, 100, 50)
-        point(self.position.x, self.position.y)
+        # self.show_acc_vector()
+        # strokeWeight(10)
+        stroke(0, 0, 90)
+        # point(self.position.x, self.position.y)
+        fill(0, 0, 90, 30)
+        circle(self.position.x, self.position.y, 10)
+        
         
     
     # wrap off the edges
@@ -112,6 +125,18 @@ class Boid:
     def apply_force(self, force):
         # F=ma, but we assure m=1 so our force vector becomes an acceleration vector
         self.acceleration.add(force)
+    
+    
+    # applies flock behaviors to all boids
+    def flock(self, boids):
+        alignment = self.align(boids, 40)
+        self.acceleration.add(alignment)
+        
+        cohesion = self.cohere(boids, 40) 
+        self.acceleration.add(cohesion)
+        
+        separation = self.separate(boids, 30).mult(1.5)
+        self.acceleration.add(separation)
         
  
     # steering force = desired velocity - current velocity, as per Craig Reynolds's
@@ -171,8 +196,8 @@ class Boid:
             return PVector()    
 
 
-    # steer to move toward the average location of nearby flockmates
-    def cohesion(self, boids, perception_radius):
+    # steer to move toward the average location of nearby flockmates. This is cohesion
+    def cohere(self, boids, perception_radius):
         total = 0
         average = PVector(0, 0) # this is our desired velocity
         
@@ -197,23 +222,11 @@ class Boid:
             return self.seek_target(steering_force)            
             
         # # note that if we didn't find anything, we return the zero vector
-        return PVector(0, 0)
-    
-    
-    # applies flock behaviors to all boids
-    def flock(self, boids):
-        alignment = self.align(boids, 40)
-        self.acceleration.add(alignment)
-        
-        cohesion = self.cohesion(boids, 40) 
-        self.acceleration.add(cohesion)
-        
-        separation = self.separation(boids, 30)
-        self.acceleration.add(separation)        
+        return PVector(0, 0) 
     
     
     # steer to avoid crowding local flockmates
-    def separation(self, boids, perception_radius):
+    def separate(self, boids, perception_radius):
         total = 0
         average = PVector(0, 0) # this is our desired velocity
         
@@ -238,7 +251,7 @@ class Boid:
         
         if total > 0:
             steering_force.div(total) # this is our desired velocity!        
-            return self.seek_velocity(steering_force).mult(1.5)            
+            return self.seek_velocity(steering_force)            
             
         # # note that if we didn't find anything, we return the zero vector
         return PVector(0, 0)

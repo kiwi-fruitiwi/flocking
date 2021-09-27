@@ -182,10 +182,18 @@ class Quadtree():
 
     
     def show(self):
-        stroke(0, 0, 100)
+        stroke(0, 0, 100, 10)
         noFill()
         strokeWeight(1)
-        rect(self.boundary.x, self.boundary.y, self.boundary.w, self.boundary.h)
+        # rect(self.boundary.x, self.boundary.y, self.boundary.w, self.boundary.h)
+        
+        x = self.boundary.x
+        y = self.boundary.y
+        w = self.boundary.w
+        h = self.boundary.h
+        # maybe we should display just the bottom and right sides
+        line(x+w, y, x+w, y+h)
+        line(x, y+h, x+w, y+h)
         
         if self.divided: # checking existence
             self.northwest.show()
